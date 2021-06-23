@@ -8,6 +8,7 @@ urlpatterns = [
     path('ajaxHandler/<int:num_question>/', views.getQuestionAjaxHandler, name='ajaxHandler'),
     path('create-interview/', views.createInterview, name='create-interview'),
     path('finish-interview/', views.interview_is_finished, name='finish-interview'),
+    path('success-interview/', views.success_interview, name='success-interview'),
 
     
     

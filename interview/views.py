@@ -11,6 +11,11 @@ from django.http import JsonResponse
 from time import time
 from django.views.generic import View
 
+def success_interview(request):
+	return render(request, 'interview/sucess.html')
+
+
+
 
 @login_required(login_url='login')
 def getQuestionAjaxHandler(request,*args, **kwargs):
@@ -22,14 +27,14 @@ def getQuestionAjaxHandler(request,*args, **kwargs):
 		max_size = True if upper>=questions_size else False
 		return JsonResponse({'data':questions,'max_size':max_size},status=200,safe=False)
 
+
+
+
 @login_required(login_url='login')
 def interview_is_finished(request):
 	if request.method == 'POST':
-		print('post request to finish interview received')
 		user = request.user
-		print('user',user)
 		if Interview.objects.filter(user=user).last():
-			
 			Interview.objects.filter(user=user).update(is_finished=True)
 			
 		else:

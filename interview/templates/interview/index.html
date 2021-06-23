@@ -53,7 +53,7 @@
 			Your browser does not support the audio element.
 
 		</audio>
-		<div align="right " id="displaytimer"><b>Timer: 0 seconds</b></div>
+		<div align="right " id="displaytimer"><b>Timer: <span id="timer-seconds">0</span> seconds</b></div>
 		<input id='timer' type='hidden' name="timer" value="">
 		<h1>Question:</h1>
 
@@ -67,7 +67,7 @@
 			</div>
 		</div>
 		<div class="mt-2">
-			<button id="startBtn" class="btn btn-primary" onclick="loadQuestion()">start</button>
+			<button id="startBtn" class="btn btn-primary">start</button>
 			<button id="loadBtn" class="btn btn-primary not-visible">next</button>
 			<button id="finishBtn" class="btn btn-primary not-visible">Finish</button>
 		</div>
@@ -105,23 +105,39 @@
 
 
 <script>
-
+	var loadBtn = document.getElementById('loadBtn')
 	const timer = document.getElementById('displaytimer')
 	const inputtag = document.getElementById('timer')
+	var timerInterval = null
+	var timerSeconds = document.getElementById('timer-seconds')
+	var timerInput = document.getElementById('timer')
 
-	t = 0
-	setInterval(() => {
-		t += 1
-		timer.innerHTML = "<b>Timer: " + t + " seconds</b>"
-		inputtag.value = t
-	}, 1000)
+	function runTimer(seconds) {
+		if (timerInterval) {
+			clearInterval(timerInterval)
+		}
 
+		var currentSecond = 0;
+
+		return setInterval(() => {
+
+			currentSecond++
+
+			timerSeconds.innerHTML = currentSecond
+			timerInput.value = currentSecond
+
+			if (currentSecond == seconds) {
+				var clickEvent = new Event('click')
+				loadBtn.dispatchEvent(clickEvent)
+			}
+		}, 1000)
+	}
 
 
 </script>
 <script>
 	const questionsbox = document.getElementById('questions-box')
-	const loadBtn = document.getElementById('loadBtn')
+	// const loadBtn = document.getElementById('loadBtn')
 	const spinnerBox = document.getElementById('spinner-box')
 	const startBtn = document.getElementById('startBtn')
 	const finishBtn = document.getElementById('finishBtn')
@@ -169,14 +185,16 @@
 					spinnerBox.classList.add('not-visible')
 					data.map(question => {
 
-						questionsbox.innerHTML = `
-						${question.question_text}
-						`
-						var timer = parseInt(question.timer) * 60
-						console.log('timerrrr', timer)
+						questionsbox.innerHTML = `${question.question_text}`
+						timerInterval = runTimer(parseInt(question.timer) * 60)
 
 					})
 					if (maxSize) {
+
+						clearInterval(timerInterval)
+
+						timerSeconds.innerHTML = 0
+						timerInput.value = 0
 
 						loadBtn.classList.add('not-visible')
 						finishBtn.classList.remove('not-visible')
@@ -198,6 +216,7 @@
 
 	startBtn.addEventListener('click', () => {
 		createInterview()
+		loadQuestion()
 	})
 
 	finishBtn.addEventListener('click', () => {
@@ -261,6 +280,8 @@
 		console.log("playing video"); playVideo(8, 20);
 		document.getElementById("voice").src = "{% static 'images/good.mp3' %}";
 		document.getElementById("audioplayer").load();
+
+
 	}, 10000);
 
 	var time = 10000;
@@ -276,6 +297,7 @@
 
 		time += 3000;
 		setTimeout(function () { console.log("starting to listen again!"); playVideo(68, 76); }, time);
+
 
 	}
 	time += 10000

@@ -1,0 +1,77 @@
+<script type="text/javascript">
+	
+
+
+	var myvideo = document.getElementById('videoplayer');
+
+		/* add the same event and 
+		   handler function to each 
+		   of the three buttons */
+		
+		   
+		var buttons = ['playme','jump','jump2'];
+
+		
+
+		buttons.forEach(function(bn) {
+		    document.getElementById(bn).addEventListener(
+		        'click', buttonEvents, !1
+		    );
+		});
+
+
+		function buttonEvents(e) {
+		    /* get the id of the clicked button */
+		    var element_id = e.target.id;
+		    /* E.G. element_id = 'playme', 'jump', or 'jump2' */
+
+		    /* declare variables before setting them */
+		    var timeStart = 0;
+		    var timeEnd = 0;
+
+		    /* set start and end values depending 
+		       on which button was clicked */
+		    switch(element_id) {
+		        case 'playme':
+		            /* example values... */
+		            timeStart = 0;
+		            timeEnd = 1000; 
+		            break;
+		        case 'jump':
+		            timeStart = 20;
+		            timeEnd = 30;
+		            break;
+		        case 'jump2':
+		            timeStart = 40;
+		            timeEnd = 60;
+		    }
+
+		    /* call 'playVideo()' */
+		    playVideo(timeStart, timeEnd);
+		} 
+		
+
+
+		function playVideo(startTime, endTime) {
+
+		    function checkTime() {
+		        if (myvideo.currentTime >= endTime) {
+		           myvideo.pause();
+		        } else {
+		           /* call checkTime every 1/10th 
+		              second until endTime */
+		           setTimeout(checkTime, 100);
+		        }
+		    }
+
+		    /* stop if playing (otherwise ignored) */
+		    myvideo.pause();
+		    /* set video start time */
+		    myvideo.currentTime = startTime;
+		    /* play video */
+		    myvideo.play();
+		    /* check the current time and 
+		       pause IF/WHEN endTime is reached */
+		    checkTime();
+		}
+</script>

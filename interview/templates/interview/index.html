@@ -1,0 +1,387 @@
+{% extends "bot/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<head>
+	<title>record</title>
+	<style type="text/css">
+		.container {
+			position: relative;
+			text-align: center;
+			height: 800px;
+			width: 900px;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			margin: auto;
+		}
+
+		.bottom-right {
+			position: absolute;
+			bottom: 147px;
+			right: 0px;
+			height: 175px;
+			width: 250px;
+		}
+
+		img {
+			background-color: grey;
+
+		}
+
+		.not-visible {
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+	<h1 style="text-align: center">Recording Interview</h1>
+	<div class="container">
+		<video id="videoplayer" width="100%" muted>
+			<source src="{% static 'images/full_video.mp4' %}" type="video/mp4">
+
+			Your browser does not support the video tag.
+		</video>
+		<div class="bottom-right"><img class="bottom-right" src="{% url 'record' %}"></div>
+		<audio id="audioplayer" autoplay>
+
+			<source id="voice" src="" type="audio/mpeg">
+
+			Your browser does not support the audio element.
+
+		</audio>
+		<div align="right " id="displaytimer"><b>Timer: 0 seconds</b></div>
+		<input id='timer' type='hidden' name="timer" value="">
+		<h1>Question:</h1>
+
+		<div class="card">
+			<div class="card-body">
+				<div id="spinner-box" class="not-visible">
+					<div class="spinner-border text-primary" role="status"></div>
+				</div>
+				<div id="questions-box"></div>
+
+			</div>
+		</div>
+		<div class="mt-2">
+			<button id="startBtn" class="btn btn-primary" onclick="loadQuestion()">start</button>
+			<button id="loadBtn" class="btn btn-primary not-visible">next</button>
+			<button id="finishBtn" class="btn btn-primary not-visible">Finish</button>
+		</div>
+
+	</div>
+
+
+
+	<!--
+	<div class="container">
+  <video id="videoplayer" width="100%" autoplay muted loop>
+	  <source id="video" src="{% static 'images/speak.mp4' %}#t=10,20" type="video/mp4">
+	  	Your browser does not support the video tag.
+	</video>
+
+  <div class="bottom-right"><img class="bottom-right" src="{% url 'record' %}"></div>
+
+  	
+	  		
+
+	  		<audio id="audioplayer" autoplay >
+	  				
+					<source id="voice" src="{% static 'images/4.mp3' %}" type="audio/mpeg">
+						
+					Your browser does not support the audio element.
+				
+			</audio>
+	  	
+	
+	
+</div>-->
+
+</body>
+
+
+
+<script>
+
+	const timer = document.getElementById('displaytimer')
+	const inputtag = document.getElementById('timer')
+
+	t = 0
+	setInterval(() => {
+		t += 1
+		timer.innerHTML = "<b>Timer: " + t + " seconds</b>"
+		inputtag.value = t
+	}, 1000)
+
+
+
+</script>
+<script>
+	const questionsbox = document.getElementById('questions-box')
+	const loadBtn = document.getElementById('loadBtn')
+	const spinnerBox = document.getElementById('spinner-box')
+	const startBtn = document.getElementById('startBtn')
+	const finishBtn = document.getElementById('finishBtn')
+
+	let visible = 1
+
+	function createInterview(event) {
+
+		$.ajax({
+			url: 'create-interview/',
+			type: 'POST',
+			data: {
+				interview: 'interview started',
+
+				csrfmiddlewaretoken: '{{csrf_token}}'
+			},
+		});
+	}
+
+	function finishInterview(event) {
+
+		$.ajax({
+			url: 'finish-interview/',
+			type: 'POST',
+			data: {
+				interview: ' interview finished',
+
+				csrfmiddlewaretoken: '{{csrf_token}}'
+			},
+		});
+	}
+
+	function loadQuestion(event) {
+		startBtn.classList.add('not-visible')
+		loadBtn.classList.remove('not-visible')
+		$.ajax({
+			type: 'GET',
+			url: `ajaxHandler/${visible}/`,
+			success: function (response) {
+				maxSize = response.max_size
+				const data = response.data;
+				spinnerBox.classList.remove('not-visible')
+
+				setTimeout(() => {
+					spinnerBox.classList.add('not-visible')
+					data.map(question => {
+
+						questionsbox.innerHTML = `
+						${question.question_text}
+						`
+						var timer = parseInt(question.timer) * 60
+						console.log('timerrrr', timer)
+
+					})
+					if (maxSize) {
+
+						loadBtn.classList.add('not-visible')
+						finishBtn.classList.remove('not-visible')
+						questionsbox.innerHTML = "No more Question to load"
+					}
+				}, 400)
+			},
+			error: function (error) {
+				console.log(error)
+			}
+		})
+	}
+
+
+	loadBtn.addEventListener('click', () => {
+		visible += 1
+		loadQuestion()
+	})
+
+	startBtn.addEventListener('click', () => {
+		createInterview()
+	})
+
+	finishBtn.addEventListener('click', () => {
+		finishInterview()
+	})
+
+
+</script>
+
+<script>
+	/*var links = ["http://www.abc.com","http://www.def.com","http://www.ghi.com"];*/
+	/*
+	var video = ["{% static 'images/speak.mp4' %}#t=30,40","{% static 'images/speak.mp4' %}#t=10,20","{% static 'images/speak.mp4' %}#t=15,25"];
+	var audio1 = ["{% static 'images/4.mp3' %}","{% static 'images/2.mp3' %}","{% static 'images/5.mp3' %}"];"{% static 'images/1.mp3' %}"
+	var audio = []
+	var i = 0;
+   
+	var b = "{{files}}".split(',');
+    
+	var i;
+	for (i = 0; i < 3; i++) {
+			var a = "{%static'images/";
+		var d = b[i];
+		var c = ".mp3'%}";
+		var mylist = a.concat(d,c);
+		audio.push(mylist);
+		console.log(audio);
+	
+	}
+    
+	var renew = setInterval(function(){
+		if(audio1.length == i){
+			i = 0;
+		}
+		else {
+		document.getElementById("video").src = video[i]; 
+		document.getElementById("videoplayer").load();
+		document.getElementById("voice").src = audio1[i]; 
+		document.getElementById("audioplayer").load();
+	    
+		i++;
+	
+	}
+	},4000);
+	*/
+
+	//var time = 0
+	var audio1 = ["{% static 'images/4.mp3' %}", "{% static 'images/2.mp3' %}", "{% static 'images/8.mp3' %}", "{% static 'images/5.mp3' %}", "{% static 'images/6.mp3' %}"];
+	var myvideo = document.getElementById('videoplayer');
+
+	/* add the same event and 
+	   handler function to each 
+	   of the three buttons */
+
+
+	//setTimeout(function(){console.log("silence at the beginning!"); playVideo(68,76);},0);
+	//setTimeout(function(){ alert("Hello"); }, 10000);
+	console.log("silence at the beginning!");
+	setTimeout(function () { console.log("starting to listen again!"); playVideo(68, 76); }, 0);
+	setTimeout(function () {
+		console.log("playing video"); playVideo(8, 20);
+		document.getElementById("voice").src = "{% static 'images/good.mp3' %}";
+		document.getElementById("audioplayer").load();
+	}, 10000);
+
+	var time = 10000;
+	for (let i = 0; i < 5; i++) {
+		console.log("entered in for loop");
+		time += 10000;
+		setTimeout(function () {
+			console.log("playing video"); playVideo(8, 20);
+			console.log(audio1[i])
+			document.getElementById("voice").src = audio1[i];
+			document.getElementById("audioplayer").load();
+		}, time);
+
+		time += 3000;
+		setTimeout(function () { console.log("starting to listen again!"); playVideo(68, 76); }, time);
+
+	}
+	time += 10000
+	setTimeout(function () {
+		console.log("playing video"); playVideo(8, 20);
+		document.getElementById("voice").src = "{% static 'images/good.mp3' %}";
+		document.getElementById("audioplayer").load();
+		//alert("Hello there")
+	}, time);
+
+	/*
+	setTimeout(function(){console.log("welcome message!"); playVideo(8,20); 
+	document.getElementById("voice").src = audio1[0]; 
+	document.getElementById("audioplayer").load();},10000);
+	
+	setTimeout(function(){console.log("starting to listen again!"); playVideo(68,76); },13000);
+	
+	setTimeout(function(){console.log("starting to speak again!"); playVideo(8,20);
+	document.getElementById("voice").src = audio1[1]; 
+	document.getElementById("audioplayer").load(); },23000);
+	
+	setTimeout(function(){console.log("starting to listen again 3rd time!"); playVideo(68,76); },26000);
+	
+	setTimeout(function(){console.log("starting to speak again!"); playVideo(8,20);
+	document.getElementById("voice").src = audio1[2]; 
+	document.getElementById("audioplayer").load(); },26000);
+	
+	setTimeout(function(){console.log("starting to listen again!"); playVideo(68,76); },30000);
+	
+	setTimeout(function(){console.log("starting to speak again!"); playVideo(8,20);
+	document.getElementById("voice").src = audio1[3]; 
+	document.getElementById("audioplayer").load(); },36000);
+	
+	
+	setTimeout(function(){console.log("starting to listen again!"); playVideo(68,76); },40000);
+	
+	setTimeout(function(){console.log("starting to speak again!"); playVideo(8,20);
+	document.getElementById("voice").src = audio1[4]; 
+	document.getElementById("audioplayer").load(); },50000);
+	
+	setTimeout(function(){console.log("starting to listen again!"); playVideo(68,76); },54000);
+	
+	*/
+
+	/*
+	function video() {
+	    
+		var timeStart = 0;
+		var timeEnd = 0;
+	
+	   
+	
+		for (let i = 1; i < 3; i++) {
+		  setTimeout(function timer() {
+			timeStart = timeStart + 100;
+			timeEnd = timeEnd + 120; 
+			playVideo(timeStart, timeEnd);
+		  }, i * 8000);
+		}   
+	   
+	
+	} 
+	
+	*/
+
+	function playVideo(startTime, endTime) {
+
+		function checkTime() {
+			if (myvideo.currentTime >= 80) {
+				myvideo.currentTime = 68;
+			} else {
+				/* call checkTime every 1/10th 
+				   second until endTime */
+				setTimeout(checkTime, 100);
+			}
+		}
+
+		var thePromise = myvideo.play();
+
+		if (thePromise != undefined) {
+
+			thePromise.then(function (_) {
+
+				myvideo.pause();
+				myvideo.currentTime = startTime;
+				myvideo.play();
+			});
+
+		}
+
+		/* stop if playing (otherwise ignored) */
+		//myvideo.pause();
+		/* set video start time */
+		//myvideo.currentTime = startTime;
+		/* play video */
+		//myvideo.play();
+		/* check the current time and 
+		   pause IF/WHEN endTime is reached */
+		checkTime();
+	}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+	integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+<script src="{% static 'main.js'%}"></script>
+<script src="{% static 'jquery.js'%}"></script>
+
+</html>
+{% endblock %}
